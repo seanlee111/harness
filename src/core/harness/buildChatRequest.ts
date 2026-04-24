@@ -33,10 +33,11 @@ export function buildChatRequest(input: BuildChatRequestInput): ChatRequest {
     'When refusing, keep the persona active and use the configured refusal style.',
     renderPersona(input.persona),
   ].join('\n\n')
+  const visibleHistory = input.history.filter((message) => message.role !== 'system')
 
   return {
     model: input.model,
-    messages: [{ role: 'system', content: systemMessage }, ...input.history],
+    messages: [{ role: 'system', content: systemMessage }, ...visibleHistory],
     temperature: 0.7,
     metadata: {
       personaId: input.persona.id,

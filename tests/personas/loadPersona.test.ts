@@ -57,4 +57,15 @@ describe('loadPersona', () => {
       fieldPaths: expect.arrayContaining(['id', 'displayName']),
     })
   })
+
+  it('throws a structured config error for malformed YAML', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'persona-malformed-'))
+    const filePath = join(dir, 'bad.yaml')
+    await writeFile(filePath, 'id: [unterminated\n', 'utf8')
+
+    await expect(loadPersona({ personaPath: filePath })).rejects.toMatchObject({
+      name: 'PersonaConfigError',
+      fieldPaths: ['<yaml>'],
+    })
+  })
 })

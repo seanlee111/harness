@@ -27,12 +27,15 @@ function zodPaths(error: ZodError): string[] {
 export async function loadPersona(options: LoadPersonaOptions): Promise<Persona> {
   if (options.personaPath) {
     const raw = await readFile(options.personaPath, 'utf8')
-    const parsed = parseYaml(raw)
     try {
+      const parsed = parseYaml(raw)
       return parsePersonaConfig(parsed)
     } catch (error) {
       if (error instanceof ZodError) {
         throw new PersonaConfigError('Invalid persona config', zodPaths(error))
+      }
+      if (error instanceof Error) {
+        throw new PersonaConfigError('Invalid persona YAML', ['<yaml>'])
       }
       throw error
     }
