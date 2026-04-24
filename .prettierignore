@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+docs/superpowers/specs/
+docs/superpowers/plans/
+docs/superpowers/summaries/
+transcripts/
+reports/
