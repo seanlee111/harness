@@ -39,6 +39,14 @@ function normalizeError(error: unknown): AgentError {
   }
 }
 
+function cloneMessage(message: ChatMessage): ChatMessage {
+  return { ...message }
+}
+
+function cloneMessages(messages: ChatMessage[]): ChatMessage[] {
+  return messages.map(cloneMessage)
+}
+
 export class AgentEngine {
   private readonly persona: Persona
   private readonly model: string
@@ -57,14 +65,14 @@ export class AgentEngine {
   reset(session?: { sessionId?: string; messages?: ChatMessage[] }): void {
     this.session = {
       sessionId: session?.sessionId ?? randomUUID(),
-      messages: session?.messages ?? [],
+      messages: cloneMessages(session?.messages ?? []),
     }
   }
 
   getSession(): AgentSession {
     return {
       sessionId: this.session.sessionId,
-      messages: [...this.session.messages],
+      messages: cloneMessages(this.session.messages),
     }
   }
 
@@ -87,17 +95,18 @@ export class AgentEngine {
       const request = buildChatRequest({
         persona: this.persona,
         model: this.model,
-        history: this.session.messages,
+        history: cloneMessages(this.session.messages),
         redteamCaseId: input.metadata?.redteamCaseId,
       })
       const response = await this.modelClient.createChatCompletion(request)
-      this.session.messages.push(response.message)
+      const assistantMessage = cloneMessage(response.message)
+      this.session.messages.push(assistantMessage)
 
       yield {
         type: 'assistant_message',
         sessionId: this.session.sessionId,
-        content: response.message.content,
-        message: response.message,
+        content: assistantMessage.content,
+        message: cloneMessage(assistantMessage),
       }
 
       if (response.usage) {
@@ -111,7 +120,7 @@ export class AgentEngine {
           timestamp: new Date().toISOString(),
           personaId: this.persona.id,
           model: response.model,
-          content: response.message.content,
+          content: assistantMessage.content,
           redteamCaseId: input.metadata?.redteamCaseId,
         })
         yield {

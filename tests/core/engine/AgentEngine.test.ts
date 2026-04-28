@@ -96,4 +96,35 @@ describe('AgentEngine', () => {
       },
     ])
   })
+
+  it('does not expose mutable session message references', async () => {
+    const initialMessages = [{ role: 'user' as const, content: 'seed' }]
+    const modelClient: ModelClient = {
+      async createChatCompletion(request) {
+        return {
+          model: request.model,
+          message: { role: 'assistant', content: 'calm reply' },
+        }
+      },
+    }
+
+    const engine = new AgentEngine({ persona, model: 'unit-test-model', modelClient })
+    engine.reset({ sessionId: 's1', messages: initialMessages })
+
+    initialMessages[0]!.content = 'mutated input'
+    expect(engine.getSession().messages[0]?.content).toBe('seed')
+
+    const session = engine.getSession()
+    session.messages[0]!.content = 'mutated session'
+    expect(engine.getSession().messages[0]?.content).toBe('seed')
+
+    const events = await collect(engine.submitMessage({ content: 'hello' }))
+    const assistantEvent = events.find((event) => event.type === 'assistant_message')
+    if (assistantEvent?.type !== 'assistant_message') {
+      throw new Error('expected assistant_message event')
+    }
+
+    assistantEvent.message.content = 'mutated event'
+    expect(engine.getSession().messages[2]?.content).toBe('calm reply')
+  })
 })
