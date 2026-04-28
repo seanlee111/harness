@@ -47,6 +47,13 @@ describe('loadPersona', () => {
     expect(persona.evaluation.requiredStyleAnchors).toEqual(['noted'])
   })
 
+  it('loads the package-local default YAML persona by relative path', async () => {
+    const persona = await loadPersona({ personaPath: 'personas/default.yaml' })
+
+    expect(persona.id).toBe('default')
+    expect(persona.displayName).toBe('Ming')
+  })
+
   it('throws a structured config error for invalid persona config', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'persona-invalid-'))
     const filePath = join(dir, 'bad.yaml')

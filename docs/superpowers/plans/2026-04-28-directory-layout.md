@@ -310,9 +310,9 @@ Expected: exit 0 and prints `Use npm run redteam:live to run against the configu
 cd /Users/bytedance/Desktop/harness-directory-layout/harness
 set +e
 env -u VOLCENGINE_API_KEY -u VOLCENGINE_BASE_URL -u VOLCENGINE_MODEL npm run cli > /tmp/harness-cli-smoke.out 2>&1
-status=$?
+cli_status=$?
 set -e
-test "$status" -eq 1
+test "$cli_status" -eq 1
 rg "VOLCENGINE_API_KEY" /tmp/harness-cli-smoke.out
 ! rg "at .*\\(" /tmp/harness-cli-smoke.out
 ```
@@ -425,9 +425,9 @@ npm run check
 npm run redteam
 set +e
 env -u VOLCENGINE_API_KEY -u VOLCENGINE_BASE_URL -u VOLCENGINE_MODEL npm run cli > /tmp/harness-cli-smoke-main.out 2>&1
-status=$?
+cli_status=$?
 set -e
-test "$status" -eq 1
+test "$cli_status" -eq 1
 rg "VOLCENGINE_API_KEY" /tmp/harness-cli-smoke-main.out
 ! rg "at .*\\(" /tmp/harness-cli-smoke-main.out
 ```
