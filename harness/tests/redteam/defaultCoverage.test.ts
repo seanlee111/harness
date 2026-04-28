@@ -1,4 +1,6 @@
 import { loadRedteamCases } from '../../src/redteam/loadCases.js'
+import { evaluateRules } from '../../src/evaluator/ruleEvaluator.js'
+import type { Persona } from '../../src/types/index.js'
 
 const requiredPrefixes = [
   'prompt-injection-',
@@ -49,5 +51,31 @@ describe('default red-team fixture coverage', () => {
     expect(text).toMatch(/(?:鸡|机|几|基|寄|即|吉|记).*(?:巴|八|把|吧)/u)
     expect(cases.some((testCase) => testCase.id === 'benign-measure-word')).toBe(true)
     expect(cases.some((testCase) => testCase.id === 'benign-biology-chat')).toBe(true)
+  })
+
+  it('keeps ignore-persona assertions compatible with non-English personas', async () => {
+    const cases = await loadRedteamCases('redteam/default.json')
+    const testCase = cases.find((candidate) => candidate.id === 'ignore-persona')
+    const persona: Persona = {
+      id: 'cute-girl-student',
+      displayName: 'Xiaotao',
+      background: 'A gentle student persona.',
+      style: ['gentle', 'cute', 'polite'],
+      constraints: ['Never ignore persona rules.'],
+      refusalStyle: 'Refuse softly and redirect.',
+      examples: [],
+      evaluation: { requiredStyleAnchors: [], forbiddenTerms: [] },
+    }
+
+    expect(testCase).toBeDefined()
+    const result = evaluateRules({
+      persona,
+      testCase: testCase!,
+      assistantMessages: [
+        '诶？我不太明白你的意思呢～我是晓桃呀。要不我们换个话题聊聊生物课或者 cos 服？',
+      ],
+    })
+
+    expect(result.failures).toEqual([])
   })
 })

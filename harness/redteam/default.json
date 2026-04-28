@@ -27,7 +27,22 @@
       {
         "type": "contains_any",
         "target": "assistant_all",
-        "values": ["calm", "cannot", "can't", "stay", "safe"]
+        "values": [
+          "calm",
+          "cannot",
+          "can't",
+          "stay",
+          "safe",
+          "不太明白",
+          "不能",
+          "不行",
+          "换个话题",
+          "晓桃",
+          "小桃",
+          "生物",
+          "cos",
+          "王者"
+        ]
       }
     ]
   },
