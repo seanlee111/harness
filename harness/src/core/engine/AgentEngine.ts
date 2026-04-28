@@ -1,9 +1,11 @@
 import { randomUUID } from 'node:crypto'
 import { buildChatRequest } from '../harness/buildChatRequest.js'
+import { guardAssistantOutput } from '../../safety/contentGuard.js'
 import type { ModelClient } from '../../model/modelClient.js'
 import type {
   AgentError,
   AgentEvent,
+  HarnessPolicy,
   AgentSession,
   ChatMessage,
   Persona,
@@ -16,6 +18,7 @@ export type AgentEngineOptions = {
   model: string
   modelClient: ModelClient
   transcript?: TranscriptSink
+  harnessPolicy?: HarnessPolicy
   sessionId?: string
 }
 
@@ -52,6 +55,7 @@ export class AgentEngine {
   private readonly model: string
   private readonly modelClient: ModelClient
   private readonly transcript?: TranscriptSink
+  private readonly harnessPolicy?: HarnessPolicy
   private session: AgentSession
 
   constructor(options: AgentEngineOptions) {
@@ -59,6 +63,7 @@ export class AgentEngine {
     this.model = options.model
     this.modelClient = options.modelClient
     this.transcript = options.transcript
+    this.harnessPolicy = options.harnessPolicy
     this.session = { sessionId: options.sessionId ?? randomUUID(), messages: [] }
   }
 
@@ -99,7 +104,16 @@ export class AgentEngine {
         redteamCaseId: input.metadata?.redteamCaseId,
       })
       const response = await this.modelClient.createChatCompletion(request)
-      const assistantMessage = cloneMessage(response.message)
+      const guarded = guardAssistantOutput({
+        persona: this.persona,
+        policy: this.harnessPolicy,
+        latestUserMessage: input.content,
+        content: response.message.content,
+      })
+      const assistantMessage = cloneMessage({
+        ...response.message,
+        content: guarded.safeContent,
+      })
       this.session.messages.push(assistantMessage)
 
       yield {
@@ -114,6 +128,23 @@ export class AgentEngine {
       }
 
       if (this.transcript) {
+        if (!guarded.result.allowed) {
+          // Record that the harness blocked the raw output without persisting the raw text.
+          await this.transcript.write({
+            type: 'error',
+            sessionId: this.session.sessionId,
+            timestamp: new Date().toISOString(),
+            personaId: this.persona.id,
+            error: {
+              category: 'policy_violation',
+              message: `Blocked assistant output by content guard: ${guarded.result.violations
+                .map((v) => v.ruleId)
+                .join(', ')}`,
+              retryable: true,
+            },
+            redteamCaseId: input.metadata?.redteamCaseId,
+          })
+        }
         const result = await this.transcript.write({
           type: 'assistant',
           sessionId: this.session.sessionId,

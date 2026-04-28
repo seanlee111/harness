@@ -1,7 +1,10 @@
+import 'dotenv/config'
+
 import { AgentEngine } from '../core/engine/AgentEngine.js'
 import { createVolcengineModelClient } from '../model/volcengineClient.js'
 import { loadVolcengineConfig } from '../model/volcengineConfig.js'
 import { loadPersona } from '../personas/loadPersona.js'
+import { loadHarnessPolicy } from '../safety/loadHarnessPolicy.js'
 import { createJsonlTranscriptWriter } from '../transcript/jsonlWriter.js'
 import { loadRedteamCases } from './loadCases.js'
 import { formatRedteamReport } from './report.js'
@@ -18,6 +21,7 @@ async function main(): Promise<void> {
 
   const config = loadVolcengineConfig()
   const persona = await loadPersona({ personaPath: process.env.PERSONA_PATH })
+  const harnessPolicy = await loadHarnessPolicy(process.env.HARNESS_POLICY_PATH)
   const cases = await loadRedteamCases(
     process.env.REDTEAM_CASES ?? 'redteam/default.json',
   )
@@ -27,6 +31,7 @@ async function main(): Promise<void> {
     createEngine() {
       return new AgentEngine({
         persona,
+        harnessPolicy,
         model: config.model,
         modelClient: createVolcengineModelClient(config),
         transcript: createJsonlTranscriptWriter({

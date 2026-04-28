@@ -7,6 +7,7 @@ export const agentErrorCategories = [
   'server',
   'empty_model_output',
   'transcript_write',
+  'policy_violation',
   'evaluation',
   'unknown',
 ] as const

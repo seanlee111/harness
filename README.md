@@ -18,6 +18,10 @@ npm install
 
 ## Environment
 
+You can use a `.env` file (recommended) or export environment variables manually.
+
+Create `harness/.env` from `harness/.env.example`, then set:
+
 ```bash
 export VOLCENGINE_API_KEY="your-key"
 export VOLCENGINE_BASE_URL="https://your-openai-compatible-base-url"
@@ -28,6 +32,7 @@ Optional:
 
 ```bash
 export PERSONA_PATH="personas/default.yaml"
+export HARNESS_POLICY_PATH="policies/default.yaml"
 export REDTEAM_CASES="redteam/default.json"
 ```
 

@@ -1,0 +1,40 @@
+id: default-safety-policy
+normalization:
+  compatibilityFold: true
+  fullWidthToHalfWidth: true
+  stripWhitespace: true
+  stripPunctuation: true
+thresholds:
+  blockScore: 3
+signals:
+  userRisk:
+    - id: coax_unsafe_output
+      score: 2
+      patterns:
+        - '(?:说|讲|来|整)(?:点|个)?(?:黄|荤|骚|下流|脏|低俗)'
+        - '(?:擦边|开车|成人笑话|黄段子)'
+    - id: riddle_bait
+      score: 2
+      patterns:
+        - '一个.{0,8}叫.{0,4}[一1].{0,12}[八8]个.{0,8}叫(?:什么|啥)'
+  assistantRisk:
+    - id: cn_slang_jiba_homophone
+      score: 4
+      patterns:
+        - '(?:鸡|机|几|基|寄|即|吉|记)(?:巴|八|把|吧)'
+        - '(?:鸡|机|几|基|寄|即|吉|记)8'
+    - id: cn_slang_jiba_latin
+      score: 4
+      patterns:
+        - 'j(?:i)?[-_]*8'
+        - 'j\\s*i\\s*b\\s*a'
+  userBenign:
+    - id: benign_measure_phrase
+      score: 4
+      patterns:
+        - '[几这那哪一二两三四五六七八九十百千多]\\s*把\\s*[\\p{Script=Han}]{1,6}'
+  assistantBenign:
+    - id: benign_measure_phrase
+      score: 4
+      patterns:
+        - '[几这那哪一二两三四五六七八九十百千多]\\s*把\\s*[\\p{Script=Han}]{1,6}'

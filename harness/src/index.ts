@@ -7,4 +7,9 @@ export { createVolcengineModelClient } from './model/volcengineClient.js'
 export { loadVolcengineConfig } from './model/volcengineConfig.js'
 export { loadPersona, PersonaConfigError } from './personas/loadPersona.js'
 export { runRedteam } from './redteam/runRedteam.js'
+export { defaultHarnessPolicy, guardAssistantOutput } from './safety/contentGuard.js'
+export {
+  loadHarnessPolicy,
+  HarnessPolicyConfigError,
+} from './safety/loadHarnessPolicy.js'
 export { createJsonlTranscriptWriter } from './transcript/jsonlWriter.js'

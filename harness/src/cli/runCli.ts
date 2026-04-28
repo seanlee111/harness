@@ -40,7 +40,9 @@ export async function runCli(options: RunCliOptions): Promise<void> {
   })
   write(options.output, 'agent harness ready\n')
 
+  let sawAnyLine = false
   for await (const line of rl) {
+    sawAnyLine = true
     const trimmed = line.trim()
     if (!trimmed) continue
 
@@ -63,5 +65,14 @@ export async function runCli(options: RunCliOptions): Promise<void> {
       const message = error instanceof Error ? error.message : String(error)
       write(options.output, `error: ${message}\n`)
     }
+  }
+
+  // If stdin is closed immediately (common in non-interactive run configs), the REPL
+  // will exit right away. Emit a hint so it doesn't look like a hang or no-op.
+  if (!sawAnyLine) {
+    write(
+      options.output,
+      'stdin closed (non-interactive). Run `npm run cli` in an interactive terminal.\n',
+    )
   }
 }

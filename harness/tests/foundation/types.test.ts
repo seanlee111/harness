@@ -18,6 +18,7 @@ describe('shared type foundation', () => {
       'server',
       'empty_model_output',
       'transcript_write',
+      'policy_violation',
       'evaluation',
       'unknown',
     ])
